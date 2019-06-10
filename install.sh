@@ -25,4 +25,5 @@ function link()
 	fi
 }
 
+link dunst/dunstrc .config/dunst/dunstrc
 link misc/xmodmap .xmodmap
