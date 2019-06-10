@@ -18,3 +18,5 @@ function link()
 		echo -e "$okay" "linked"
 	fi
 }
+
+link misc/xmodmap .xmodmap
