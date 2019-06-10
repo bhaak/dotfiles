@@ -2,6 +2,7 @@
 
 echo "Linking files..."
 BASEDIR="$(cd "$(dirname $0)" && pwd)"
+mkdir -p "$HOME/bin"
 
 function link()
 {
@@ -29,3 +30,4 @@ link dunst/dunstrc .config/dunst/dunstrc
 link misc/xmodmap .xmodmap
 
 link git/gitconfig .gitconfig
+link git/git-rename-branch bin/git-rename-branch
