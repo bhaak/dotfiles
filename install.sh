@@ -27,3 +27,5 @@ function link()
 
 link dunst/dunstrc .config/dunst/dunstrc
 link misc/xmodmap .xmodmap
+
+link git/gitconfig .gitconfig
