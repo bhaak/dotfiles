@@ -9,9 +9,9 @@ function link()
 	SOURCE=$1
 	DEST=$2
 	DESTDIR=$(dirname "$DEST")
-	error="\e[31m"
-	okay="\e[32m"
-	reset="\e[0m"
+	error="\033[31m"
+	okay="\033[32m"
+	reset="\033[0m"
 
 	if [[ ! -d "$HOME/$DESTDIR" ]]; then
 		mkdir -p "$HOME/$DESTDIR"
