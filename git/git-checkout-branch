@@ -1,0 +1,36 @@
+#!/usr/bin/env -S ruby -W2 -w
+
+git_branch_options = ''
+git_checkout_options = ''
+filter = ''
+remotes_filter = ''
+create_local_branch = false
+
+ARGV.each {|arg|
+  case arg
+  when '-a'
+    git_branch_options = '-a'
+  when '-b'
+    create_local_branch = true
+    remotes_filter = %Q{| grep ^..remotes/}
+    git_branch_options = '-a'
+  else
+    filter = %Q{| grep -i "#{arg.strip}"}
+  end
+}
+
+cmd = "git branch #{git_branch_options}#{filter}#{remotes_filter} | fzf"
+branch = `#{cmd}`.strip
+
+if create_local_branch && branch.start_with?('remotes/')
+  local_branch = branch[8..-1]
+  if local_branch.index('/')
+    git_checkout_options = %Q{-b #{local_branch[local_branch.index('/')+1..-1]} }
+  else
+    git_checkout_options = %Q{-b #{local_branch} }
+  end
+end
+checkout = %Q{git checkout #{git_checkout_options}#{branch}}
+
+puts checkout
+exec(checkout)

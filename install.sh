@@ -38,7 +38,8 @@ link dunst/dunstrc .config/dunst/dunstrc
 link misc/xmodmap .xmodmap
 
 link git/gitconfig .gitconfig
-link git/git-rename-branch bin/git-rename-branch
+link git/git-rename-branch   bin/git-rename-branch
+link git/git-checkout-branch bin/git-checkout-branch 
 
 mkdir -p "$HOME/.vim/swap_files"
 mkdir -p "$HOME/.vim/undo_files"
