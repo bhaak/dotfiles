@@ -39,3 +39,7 @@ link misc/xmodmap .xmodmap
 
 link git/gitconfig .gitconfig
 link git/git-rename-branch bin/git-rename-branch
+
+mkdir -p "$HOME/.vim/swap_files"
+mkdir -p "$HOME/.vim/undo_files"
+link vim/vimrc .vimrc

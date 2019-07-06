@@ -1,0 +1,344 @@
+" An example for a vimrc file.
+"
+" Maintainer:	Bram Moolenaar <Bram@vim.org>
+" Last change:	2001 Jul 18
+"
+" To use it, copy it to
+"     for Unix and OS/2:  ~/.vimrc
+"	      for Amiga:  s:.vimrc
+"  for MS-DOS and Win32:  $VIM\_vimrc
+"	    for OpenVMS:  sys$login:.vimrc
+
+" Use Vim settings, rather then Vi settings (much better!).
+" This must be first, because it changes other options as a side effect.
+set nocompatible
+
+" backups into this directory
+set backupdir=~/.vimbackup/backup
+set backup		" keep a backup file
+
+" location of swap files with complete paths
+set directory=$HOME/.vim/swap_files//
+set undodir=$HOME/.vim/undo_files//
+
+" better syntax highlighting for dark backgrounds
+set background=dark
+
+" Usually search case insensitive, if uppercase characters
+" in search pattern, search sensitive
+set ignorecase
+set smartcase
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+" expand tabs to spaces
+" set expandtab
+
+" allow backspacing over everything in insert mode
+set backspace=indent,eol,start
+
+set history=50		" keep 50 lines of command line history
+set ruler		" show the cursor position all the time
+set showcmd		" display incomplete commands
+set incsearch		" do incremental searching
+
+
+" fast terminal connection if available
+set ttyfast
+
+" For Win32 GUI: remove 't' flag from 'guioptions': no tearoff menu entries
+" let &guioptions = substitute(&guioptions, "t", "", "g")
+
+" Don't use Ex mode, use Q for formatting
+map Q gq
+
+" Make p in Visual mode replace the selected text with the "" register.
+vnoremap p <Esc>:let current_reg = @"<CR>gvs<C-R>=current_reg<CR><Esc>
+
+" This is an alternative that also works in block mode, but the deleted
+" text is lost and it only works for putting the current register.
+"vnoremap p "_dp
+
+" Switch syntax highlighting on, when the terminal has colors
+" Also switch on highlighting the last used search pattern.
+if &t_Co > 2 || has("gui_running")
+  syntax on
+  set hlsearch
+endif
+
+if has("gui_running")
+  colorscheme darkblue
+  "set guifont=Fixed\ Regular\ 12
+  set guifont=Terminus\ 14
+  set guifont=DejaVu\ Sans\ Mono\ 12
+
+  set enc=utf8
+  set spell spelllang=de
+  set spellfile=~/.vim/spellfile.{encoding}.add
+
+  set t_Co=256
+  let &guicursor = &guicursor . ",a:blinkon0" " http://bozziesfw.wordpress.com/2007/01/28/gvim-vimrc-on-windowsxp/
+
+  " Abkuerzungen
+  ab >> »
+  ab << «
+  ab 1> ›
+  ab 1< ‹
+
+  imap ae ä
+  imap oe ö
+  imap ue ü
+  inoremap aee ae
+  inoremap oee oe
+  inoremap uee ue
+  imap AE Ä
+  imap OE Ö
+  imap UE Ü
+  inoremap AEE AE
+  inoremap OEE OE
+  inoremap UEE UE
+endif
+
+" iso8601
+iab <expr> dts strftime("%F %T")
+
+" http://vim.wikia.com/wiki/Maximize_or_set_initial_window_size
+if has("gui_running")
+	set lines=999 columns=999
+end
+
+" HTML output
+let html_number_lines = 1
+let html_use_css = 1
+let use_xhtml = 1
+
+" Tabulator 8 spaces
+set ts=8
+set list listchars=tab:>-,eol:$,nbsp:~,trail:X
+" Farbe der listchars aendern$
+if &t_Co == 256 || has("gui_running")
+	hi SpecialKey ctermfg=66 guifg=#649A9A
+	hi Normal guibg=#000030
+	hi Special ctermfg=1 cterm=bold
+	hi Type ctermfg=46 cterm=bold
+	hi PreProc ctermfg=63
+	hi Statement cterm=bold
+	hi Error ctermfg=0 guifg=#000000
+end
+
+
+" Insert current time in ISO8601
+:nnoremap <F5> "=strftime("%F %T")<CR>P
+:inoremap <F5> <C-R>=strftime("%F %T")<CR>
+
+"[20:09]<bcode:#unnethack> bhaak: ae -> ä and aee -> ae can be done with
+":imap ae ä   for the
+""        ae -> ä part and :inoremap aee ae   for the aee -> ae part
+
+" http://vim.wikia.com/wiki/Mac_OS_X_clipboard_sharing
+"set clipboard=unnamed
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" Vundle
+filetype off                  " required!
+
+set rtp+=~/.vim/bundle/vundle/
+call vundle#rc()
+
+" let Vundle manage Vundle
+" required!
+Plugin 'gmarik/vundle'
+
+" My bundles here:
+"
+" original repos on GitHub
+Plugin 'bhaak/vim-fugitive'
+Plugin 'scrooloose/nerdtree'
+Plugin 'scrooloose/nerdcommenter'
+Plugin 'vim-syntastic/syntastic'
+Plugin 'mru.vim'
+Plugin 'airblade/vim-rooter'
+Plugin 'editorconfig/editorconfig-vim'
+
+" fuzzy file picker
+Plugin 'ctrlpvim/ctrlp.vim'
+"Plugin 'FelikZ/ctrlp-py-matcher'
+"Plugin 'srstevenson/vim-picker'
+"Plugin 'nfd/filepirate'
+
+" Show git file changes in the gutter.
+Plugin 'airblade/vim-gitgutter'
+"Plugin 'mhinz/vim-signify'
+
+" grep-alikes
+"Plugin 'rking/ag.vim'
+Plugin 'mileszs/ack.vim'
+"Plugin 'jremmen/vim-ripgrep'
+"Plugin 'mhinz/vim-grepper'
+
+" mark quickfix/location list items
+Plugin 'cohama/vim-hier'
+"Plugin 'jceb/vim-hier'
+"Plugin 'tomtom/quickfixsigns_vim'
+Plugin 'ronakg/quickr-preview.vim'
+
+" handle line and column numbers in file names with a minimum of fuss
+Plugin 'wsdjeg/vim-fetch'
+
+Plugin 'majutsushi/tagbar'
+"Bundle 'lukaszkorecki/CoffeeTags'
+
+Plugin 'vim-ruby/vim-ruby'
+Plugin 'kchmck/vim-coffee-script'
+
+Plugin 'chiedojohn/vim-case-convert'
+Plugin 'Yggdroot/indentLine'
+"Bundle 'nathanaelkane/vim-indent-guides'
+"
+"Bundle 'ap/vim-css-color'
+
+
+Plugin 'chrisbra/Colorizer'
+
+" themes
+Plugin 'morhetz/gruvbox'
+Plugin 'crusoexia/vim-monokai'
+
+command ShowHighlightGroup :echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+
+if &t_Co > 16
+	"Plugin 'godlygeek/csapprox'
+end
+
+"───────────────────────────────────────────────────────────────────────
+" Plugins I haven't yet reviewed
+"───────────────────────────────────────────────────────────────────────
+" Modify * to also work with visual selections.
+" Plug 'nelstrom/vim-visual-star-search'
+" Distraction free writing by removing UI elements and centering everything.
+" Plug 'junegunn/goyo.vim'
+
+"───────────────────────────────────────────────────────────────────────
+" Plugin configuration
+"───────────────────────────────────────────────────────────────────────
+
+" vim-gitgutter
+highlight clear SignColumn " same appearance as your line number column
+" highlight link GitGutterAdd DiffAdd
+let g:gitgutter_diff_args = '-w -b'
+let g:gitgutter_map_keys = 0 " disable all gitgutter key mappings
+autocmd BufWritePost,WinEnter * GitGutter
+
+highlight GitGutterAdd    guifg=#009900 ctermfg=2
+highlight GitGutterChange guifg=#bbbb00 ctermfg=3
+highlight GitGutterDelete guifg=#ff2222 ctermfg=1
+
+
+" ctrlp
+"let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' }
+let g:ctrlp_custom_ignore = {
+  \ 'dir':  '\v[\/](\.git|\.hg|\.svn|tmp)$',
+  \ 'file': '\v\.(o|so)$'
+  \ }
+" hit at top of window, show up to 100 results
+let g:ctrlp_match_window = 'bottom,order:ttb,results:100'
+if executable('fd')
+	let g:ctrlp_user_command = 'fd --type file --type symlink . %s'
+endif
+
+" ASCII-Zeichen fuer Verzeichnisstruktur
+let g:NERDTreeDirArrows = 0
+let g:NERDTreeAutoDeleteBuffer=1
+
+
+"───────────────────────────────────────────────────────────────────────
+" filetype configuration
+"───────────────────────────────────────────────────────────────────────
+filetype plugin indent on     " required!
+
+set shiftround
+
+au FileType c    set softtabstop=4 tabstop=4 shiftwidth=4 textwidth=78 cindent
+au FileType ruby set softtabstop=2 tabstop=2 shiftwidth=2 expandtab
+au FileType css  set softtabstop=2 tabstop=2 shiftwidth=2 expandtab
+au FileType perl set softtabstop=4 tabstop=4 shiftwidth=4 expandtab
+
+au BufEnter /tmp/crontab.* setl backupcopy=yes
+
+" coffee syntax highlighting
+au BufNewFile,BufRead *.coffee set filetype=coffee
+au BufNewFile,BufRead *.textile set filetype=textile
+
+" turn off syntax highlighting after N characters
+set synmaxcol=256
+
+" indentLine
+let g:indentLine_color_gui = '#223377'
+let g:indentLine_color_gui = '#161666'
+let g:indentLine_char = '│'
+if &t_Co == 8
+  let g:indentLine_char = '░'
+  let g:indentLine_color_term = 7
+endif
+
+" vim-indent-guides
+" https://github.com/nathanaelkane/vim-indent-guides/issues/131
+"highlight Normal ctermbg=NONE
+"let g:indent_guides_enable_on_vim_startup = 1
+"let g:indent_guides_auto_colors = 0
+"hi IndentGuidesOdd  guibg=red   ctermbg=3
+"hi IndentGuidesEven guibg=green ctermbg=4
+"hi IndentGuidesOdd  ctermbg=232
+"hi IndentGuidesEven ctermbg=0
+
+" formatting specific file types
+command Json :%!python -mjson.tool
+command Xml :%!xmllint --format -
+command Html :%!tidy -w 0 -qi
+
+"let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
+"let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
+
+" grep-alikes
+if executable('rg')
+	set grepprg=rg\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
+	set grepformat^=%f:%l:%c:%m
+elseif executable('ss')
+	set grepprg=ss\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
+	set grepformat^=%f:%l:%c:%m
+elseif executable('ag')
+	set grepprg=ag\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
+	set grepformat^=%f:%l:%c:%m
+else
+	set grepprg=grep\ --recursive\ --ignore-case\ --fixed-strings
+endif
+
+cnoreabbrev ss Ack
+" Prefer rg > ag > ack
+if executable('rg')
+	let g:ackprg = 'rg -S --no-heading --sort path --vimgrep'
+elseif executable('ag')
+	let g:ackprg = 'ag --vimgrep'
+endif
+
+let g:quickr_preview_on_cursor = 1
+"let g:quickr_preview_exit_on_enter = 1
+
+" tags
+set tags=.git/tags,./tags,./TAGS,tags,TAGS
+
+" editorconfig
+" only mark lines exceeding text_width
+let g:EditorConfig_max_line_indicator = "exceeding"
+"let g:EditorConfig_max_line_indicator = "none"
+
+runtime macros/matchit.vim
+
+
+"augroup XML
+"	autocmd!
+"	autocmd FileType xml let g:xml_syntax_folding=1
+"	autocmd FileType xml setlocal foldmethod=syntax
+"	autocmd FileType xml :syntax on
+"	autocmd FileType xml :%foldopen!
+"augroup END
