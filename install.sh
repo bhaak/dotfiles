@@ -43,3 +43,5 @@ link git/git-rename-branch bin/git-rename-branch
 mkdir -p "$HOME/.vim/swap_files"
 mkdir -p "$HOME/.vim/undo_files"
 link vim/vimrc .vimrc
+link vim/create-vim-backup-directory.sh bin/create-vim-backup-directory.sh
+add_to_crontab "*/10 * * * * $HOME/bin/create-vim-backup-directory.sh"
