@@ -26,6 +26,14 @@ function link()
 	fi
 }
 
+function add_to_crontab()
+{
+	if ! crontab -l | grep -F "$1" >/dev/null; then
+		echo -e "$okay" "adding $1 to crontab"
+		(crontab -l 2>/dev/null; echo "$1") | crontab -
+	fi
+}
+
 link dunst/dunstrc .config/dunst/dunstrc
 link misc/xmodmap .xmodmap
 
