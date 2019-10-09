@@ -2,32 +2,51 @@
 
 OPTIONS='-a'
 SORT_BY='authordate'
+
+# see https://git-scm.com/docs/git-for-each-ref#_field_names
 FORMAT=[
-  '%(authordate:iso8601)',
-  '%(authorname)',
-  '%(authoremail)',
-  '%(objectname)',
+  '%(objectname:short)',
   '%(refname:lstrip=2)',
   '%(subject)',
+  '%(authorname)',
+  '%(authoremail)',
+  '%(authordate:iso8601)',
+  '%(authordate:raw)',
 ]
+
+reset   = "\e[0m"
+yellow  = "\e[33m"
 
 branches = `git branch #{OPTIONS} --format='#{FORMAT.join("\t")}' --sort #{SORT_BY}`.split("\n")
 
-name_length = branches.map {|b| b.split("\t")[1].split(' ').first.length}.max
-branch_length = branches.map {|b| b.split("\t")[4].length}.max
-
-branches.each { |branch|
+branch_length = branches.map {|b| b.split("\t")[1].length}.max
+branches.each {|branch|
   f = branch.split("\t")
-  output = [
-    f[0][0..18],
-    f[1].split(' ').first.ljust(name_length),
-    f[4].ljust(branch_length),
-    f[5]
-  ].join(' ')
+
+  # prevent too dark commit hash colors
+  r = f[0][0..1].to_i(16)*200/255 + 50
+  g = f[0][2..3].to_i(16)*200/255 + 50
+  b = f[0][4..5].to_i(16)*200/255 + 50
+  color = "\e[38;2;%d;%d;%dm" % [r, g, b]
+
+  # indicate age by grey colors
+  age = Time.now.to_i - f[6].to_i
+  staleness = [Math::log(1+age/86400).ceil, 15].min
+  age_color = "\e[38;5;#{255-staleness}m"
+
   if $stdout.tty?
-    width = `tput cols`.to_i-1
-    puts output[0..width]
+    message_length = `tput cols`.to_i-1 - (f[0].size + 1 + 19 + 1 + branch_length + 1)
   else
-    puts output
+    message_length = -1
+    color = age_color = yellow = ''
   end
+
+  output = [
+    "#{color}#{f[0]}#{reset}",
+    "#{age_color}#{f[5][0..18]}#{reset}",
+    "#{yellow}#{f[1].ljust(branch_length)}#{reset}",
+    f[2][0..message_length]
+  ].join(' ')
+
+  puts output
 }
