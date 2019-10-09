@@ -1,0 +1,33 @@
+#!/usr/bin/env ruby
+
+OPTIONS='-a'
+SORT_BY='authordate'
+FORMAT=[
+  '%(authordate:iso8601)',
+  '%(authorname)',
+  '%(authoremail)',
+  '%(objectname)',
+  '%(refname:lstrip=2)',
+  '%(subject)',
+]
+
+branches = `git branch #{OPTIONS} --format='#{FORMAT.join("\t")}' --sort #{SORT_BY}`.split("\n")
+
+name_length = branches.map {|b| b.split("\t")[1].split(' ').first.length}.max
+branch_length = branches.map {|b| b.split("\t")[4].length}.max
+
+branches.each { |branch|
+  f = branch.split("\t")
+  output = [
+    f[0][0..18],
+    f[1].split(' ').first.ljust(name_length),
+    f[4].ljust(branch_length),
+    f[5]
+  ].join(' ')
+  if $stdout.tty?
+    width = `tput cols`.to_i-1
+    puts output[0..width]
+  else
+    puts output
+  end
+}
