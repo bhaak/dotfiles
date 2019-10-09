@@ -1,6 +1,19 @@
 #!/usr/bin/env ruby
 
-OPTIONS='-a'
+require 'optparse'
+
+git_options = []
+
+OptionParser.new do |parser|
+  parser.separator "List last commits of all reachable git branches"
+  parser.separator ""
+  parser.separator "Options:"
+  parser.on('-a', '--all', 'Show local and remote branches') do |time|
+    git_options << '-a'
+  end
+
+end.parse!
+
 SORT_BY='authordate'
 
 # see https://git-scm.com/docs/git-for-each-ref#_field_names
@@ -17,7 +30,7 @@ FORMAT=[
 reset   = "\e[0m"
 yellow  = "\e[33m"
 
-branches = `git branch #{OPTIONS} --format='#{FORMAT.join("\t")}' --sort #{SORT_BY}`.split("\n")
+branches = `git branch #{git_options.join(' ')} --format='#{FORMAT.join("\t")}' --sort #{SORT_BY}`.split("\n")
 
 branch_length = branches.map {|b| b.split("\t")[1].length}.max
 branches.each {|branch|
