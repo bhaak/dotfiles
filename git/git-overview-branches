@@ -41,6 +41,7 @@ yellow  = "\e[33m" if yellow.to_s.empty?
 branches = `git branch #{git_options.join(' ')} --format='#{FORMAT.join("\t")}' --sort #{SORT_BY}`.split("\n")
 
 branch_length = branches.map {|b| b.split("\t")[1].length}.max
+max_column_length = `tput cols`.to_i if true
 branches.each {|branch|
   f = branch.split("\t")
 
@@ -58,7 +59,7 @@ branches.each {|branch|
   age_color = Term::RGBColor.new(staleness, staleness, staleness)
 
   if $stdout.tty?
-    message_length = `tput cols`.to_i-1 - (f[0].size + 1 + 19 + 1 + branch_length + 1)
+    message_length = max_column_length-1 - (f[0].size + 1 + 19 + 1 + branch_length + 1)
   else
     message_length = -1
     color = age_color = yellow = ''
