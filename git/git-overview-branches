@@ -11,13 +11,20 @@ end
 
 git_options = []
 
+$color = $stdout.tty?
 OptionParser.new do |parser|
   parser.separator "List last commits of all reachable git branches"
   parser.separator ""
   parser.separator "Options:"
-  parser.on('-a', '--all', 'Show local and remote branches') do |time|
+  parser.on('-a', '--all', 'Show local and remote branches') {
     git_options << '-a'
-  end
+  }
+  parser.on('-r', '--remote', 'Show only remote branches') {
+    git_options << '-r'
+  }
+  parser.on('-c', '--color', 'Force coloring ouput') {
+    $color = true
+  }
 
 end.parse!
 
@@ -34,9 +41,9 @@ FORMAT=[
   '%(authordate:raw)',
 ]
 
-reset   = "\e[0m"
-yellow  = Term::RGBColor.new(175, 95, 0)
-yellow  = "\e[33m" if yellow.to_s.empty?
+reset  = "\e[0m"
+yellow = Term::RGBColor.new(175,175, 0)
+yellow = "\e[33m" if yellow.to_s.empty?
 
 branches = `git branch #{git_options.join(' ')} --format='#{FORMAT.join("\t")}' --sort #{SORT_BY}`.split("\n")
 
@@ -58,7 +65,7 @@ branches.each {|branch|
   staleness = [255 - Math::log(1+age/86400).ceil*12, 75].max
   age_color = Term::RGBColor.new(staleness, staleness, staleness)
 
-  if $stdout.tty?
+  if $color
     message_length = max_column_length-1 - (f[0].size + 1 + 19 + 1 + branch_length + 1)
   else
     message_length = -1
