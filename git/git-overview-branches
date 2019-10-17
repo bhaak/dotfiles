@@ -2,7 +2,7 @@
 
 require 'optparse'
 begin
-  require 'term/rgbcolor'
+  require_relative "#{ENV['HOME']}/.dotfiles/dependencies/term-rgbcolor/lib/term/rgbcolor"
 rescue LoadError
   module Term
     RGBColor = Struct.new(:r, :g, :b) { def to_s; ''; end }

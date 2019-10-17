@@ -1,0 +1,3 @@
+[submodule "dependencies/term-rgbcolor"]
+	path = dependencies/term-rgbcolor
+	url = git@github.com:bhaak/term-rgbcolor.git
