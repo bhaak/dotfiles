@@ -33,17 +33,20 @@ SORT_BY='authordate'
 # see https://git-scm.com/docs/git-for-each-ref#_field_names
 FORMAT=[
   '%(objectname:short)',
-  '%(refname:lstrip=2)',
+  '%(refname:short)',
   '%(subject)',
   '%(authorname)',
   '%(authoremail)',
   '%(authordate:iso8601)',
   '%(authordate:raw)',
+  '%(refname)',
 ]
 
 reset  = "\e[0m"
-yellow = Term::RGBColor.new(175,175, 0)
-yellow = "\e[33m" if yellow.to_s.empty?
+local_branch_color = Term::RGBColor.new(175,175, 0)
+local_branch_color = "\e[33m" if local_branch_color.to_s.empty?
+remote_branch_color = Term::RGBColor.new(175, 135, 0)
+remote_branch_color = "\e[31m" if remote_branch_color.to_s.empty?
 
 branches = `git branch #{git_options.join(' ')} --format='#{FORMAT.join("\t")}' --sort #{SORT_BY}`.split("\n")
 
@@ -69,13 +72,15 @@ branches.each {|branch|
     message_length = max_column_length-1 - (f[0].size + 1 + 19 + 1 + branch_length + 1)
   else
     message_length = -1
-    color = age_color = yellow = ''
+    color = age_color = local_branch_color = remote_branch_color = ''
   end
+
+  branch_color = f[7].start_with?('refs/remotes/') ? remote_branch_color : local_branch_color
 
   output = [
     "#{color}#{f[0]}#{reset}",
     "#{age_color}#{f[5][0..18]}#{reset}",
-    "#{yellow}#{f[1].ljust(branch_length)}#{reset}",
+    "#{branch_color}#{f[1].ljust(branch_length)}#{reset}",
     f[2][0..message_length]
   ].join(' ')
 
