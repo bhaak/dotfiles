@@ -12,6 +12,7 @@ end
 git_options = []
 
 $color = $stdout.tty?
+$width = nil
 OptionParser.new do |parser|
   parser.separator "List last commits of all reachable git branches"
   parser.separator ""
@@ -24,6 +25,9 @@ OptionParser.new do |parser|
   }
   parser.on('-c', '--color', 'Force coloring ouput') {
     $color = true
+  }
+  parser.on('-w', '--width=INTEGER', 'Set output width') {|width|
+    $width = width.to_i
   }
 
 end.parse!
@@ -49,7 +53,7 @@ remote_branch_color = Term::RGBColor.new(175, 135, 0, fallback: :red)
 branches = `git branch #{git_options.join(' ')} --format='#{FORMAT.join("\t")}' --sort #{SORT_BY}`.split("\n")
 
 branch_length = branches.map {|b| b.split("\t")[1].length}.max
-max_column_length = `tput cols`.to_i if true
+max_column_length = $width || `tput cols`.to_i if true
 branches.each {|branch|
   f = branch.split("\t")
 
