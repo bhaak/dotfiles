@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+git submodule init && git submodule update
+
 echo "Linking files..."
 BASEDIR="$(cd "$(dirname $0)" && pwd)"
 mkdir -p "$HOME/bin"
