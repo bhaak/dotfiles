@@ -54,6 +54,8 @@ branches = `git branch #{git_options.join(' ')} --format='#{FORMAT.join("\t")}' 
 
 branch_length = branches.map {|b| b.split("\t")[1].length}.max
 max_column_length = $width || `tput cols`.to_i if true
+color_number = 0
+previous_hash = ''
 branches.each {|branch|
   f = branch.split("\t")
 
@@ -62,7 +64,17 @@ branches.each {|branch|
   g = f[0][2..3].to_i(16)*200/255 + 50
   b = f[0][4..5].to_i(16)*200/255 + 50
   color = Term::RGBColor.new(r, g, b).to_s
-  color = "\e[3#{f[0].to_i(16)%7+1}m" if color.empty?
+
+  # 8 color terminal fallback
+  if color.empty?
+    if previous_hash != f[0]
+       previous_hash = f[0]
+       # use colors 1 to 7
+       color_number = (color_number % 7) + 1
+    end
+
+    color = "\e[3#{color_number}m"
+  end
 
   # indicate age by grey colors
   age = Time.now.to_i - f[6].to_i
