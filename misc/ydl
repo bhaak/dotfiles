@@ -1,0 +1,6 @@
+#!/bin/sh -x
+
+# a simple script for downloading media stuff with preferred naming conventions
+
+youtube-dl -k -i -o '%(upload_date)s - %(title)s-%(id)s-%(width)sx%(height)s.%(ext)s' $@
+
