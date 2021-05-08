@@ -41,6 +41,8 @@ link misc/xmodmap .xmodmap
 link misc/ydl bin/ydl
 link misc/dff bin/dff
 
+link mpv/input.conf .config/mpv/input.conf
+
 link git/gitconfig .gitconfig
 link git/git-rename-branch   bin/git-rename-branch
 link git/git-checkout-branch bin/git-checkout-branch 
