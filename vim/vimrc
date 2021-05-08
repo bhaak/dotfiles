@@ -228,11 +228,12 @@ highlight clear SignColumn " same appearance as your line number column
 let g:gitgutter_diff_args = '-w -b'
 let g:gitgutter_map_keys = 0 " disable all gitgutter key mappings
 autocmd BufWritePost,WinEnter * GitGutter
+nmap ]c <Plug>GitGutterNextHunk
+nmap [c <Plug>GitGutterPrevHunk
 
 highlight GitGutterAdd    guifg=#009900 ctermfg=2
 highlight GitGutterChange guifg=#bbbb00 ctermfg=3
 highlight GitGutterDelete guifg=#ff2222 ctermfg=1
-
 
 " ctrlp
 "let g:ctrlp_match_func = { 'match': 'pymatcher#PyMatch' }
