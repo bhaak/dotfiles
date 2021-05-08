@@ -39,6 +39,7 @@ function add_to_crontab()
 link dunst/dunstrc .config/dunst/dunstrc
 link misc/xmodmap .xmodmap
 link misc/ydl bin/ydl
+link misc/dff bin/dff
 
 link git/gitconfig .gitconfig
 link git/git-rename-branch   bin/git-rename-branch

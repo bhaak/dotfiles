@@ -1,0 +1,13 @@
+#!/bin/sh -x
+
+if [ "$#" -eq 0 ]; then
+  diffr --colors removed:foreground:red \
+        --colors refine-removed:foreground:red:background:52 \
+        --colors added:foreground:green \
+        --colors refine-added:foreground:green:background:22 | less -R
+else
+  git show $* | diffr --colors removed:foreground:red \
+                      --colors refine-removed:foreground:red:background:52 \
+                      --colors added:foreground:green \
+                      --colors refine-added:foreground:green:background:22 | less -R
+fi
