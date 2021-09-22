@@ -1,12 +1,17 @@
 #!/bin/sh -x
 
 if [ "$#" -eq 0 ]; then
+  # without arguments
   diffr --colors removed:foreground:red \
         --colors refine-removed:foreground:red:background:52 \
         --colors added:foreground:green \
         --colors refine-added:foreground:green:background:22 | less -R
 else
-  git show $* | diffr --colors removed:foreground:red \
+  command=show
+  if [ "$1" = "--cached" ]; then
+    command=diff
+  fi
+  git $command $* | diffr --colors removed:foreground:red \
                       --colors refine-removed:foreground:red:background:52 \
                       --colors added:foreground:green \
                       --colors refine-added:foreground:green:background:22 | less -R
