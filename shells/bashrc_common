@@ -1,0 +1,48 @@
+export DISPLAY LESS PS1 PS2
+umask 022
+
+# git branch in prompt
+. /usr/share/git/git-prompt.sh
+
+export GITAWAREPROMPT=~/.bash/git-aware-prompt
+source $GITAWAREPROMPT/main.sh
+
+# user@hostname ~/cwd $
+export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \$\[\033[00m\] "
+# user@hostname 12:34:56 ~/cwd (branch)
+# $
+export PS1="\[\033[01;32m\]\u@\h\[\033[01;34m\] \w \[$txtpur\]\`__git_ps1 \"(%s)\"\`\[$txtpur\]\$git_dirty\[$bldblu\]\n\$\[$txtrst\] "
+# 12:34:56 ~/cwd (branch)
+# $
+export PS1="\[\033[02;37m\]\t\[\033[01;34m\] \w \[$txtpur\]\`__git_ps1 \"(%s)\"\`\[$txtpur\]\$git_dirty\[$bldblu\]\n\$\[$txtrst\] "
+# same as previous prompt with other colors
+# 12:34:56 ~/cwd (branch)
+# $
+export PS1="\[\033[00;38;5;238m\]\t\[\033[01;34m\] \w \[$txtpur\]\`__git_ps1 \"(%s)\"\`\[$txtpur\]\$git_dirty\[$bldblu\]\n\$\[$txtrst\] "
+
+
+# timestamp in history
+export HISTTIMEFORMAT="%Y-%m-%d %T "
+
+# editor
+export EDITOR=vim
+export VISUAL=vim
+
+# ignoriere exakte Duplikate von Kommandos
+export HISTCONTROL=ignoredups
+
+# ctrl-left/right
+bind '"\e[1;5D": backward-word'
+bind '"\e[1;5C": forward-word'
+
+bind '"\e[40m": backward-kill-word'
+bind '"\e[41m": kill-word'
+
+PATH=$HOME/bin:$PATH
+PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+
+# Disable [CTRL-D] which is used to exit the shell
+set -o ignoreeof
+
+# log commands
+export PROMPT_COMMAND='if [ "$(id -u)" -ne 0 ]; then echo "$(date "+%Y-%m-%d.%H:%M:%S") $(pwd) $(history 1)" >> ~/.logs/bash-history-$(date "+%Y-%m-%d").log; fi'

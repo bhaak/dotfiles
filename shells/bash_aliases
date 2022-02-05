@@ -1,0 +1,40 @@
+# bash aliases
+
+# git aliases
+alias s='env LC_ALL=C git status --untracked-files=all'
+alias sn='env LC_ALL=C git status --untracked-files=no'
+alias f='env LC_ALL=C git fetch --all'
+# last branch, ignore master and current branch
+alias lb='env LC_ALL=C git checkout `git for-each-ref --sort=-committerdate refs/heads/ | grep -v refs/heads/master$ | grep -v \`git rev-parse --abbrev-ref HEAD\`| head -n1 | cut -d \/ -f 3-`'
+alias master='env LC_ALL=C git checkout master'
+# cd to repository root
+alias r='cd $(git rev-parse --show-toplevel)'
+alias stash="git stash"
+alias amend="git commit --amend"
+
+# grep alikes
+alias rg='rg -S --no-heading --line-number --with-filename --sort path --colors match:none --colors match:bg:238'
+alias ss=rg
+
+# cd shortcuts
+alias cd.='cd .'
+alias cd..='cd ..'
+alias ..='cd ../'
+alias ...='cd ../../'
+alias ....='cd ../../../'
+alias .....='cd ../../../../'
+alias ......='cd ../../../../../'
+alias .1='cd ../'
+alias .2='cd ../../'
+alias .3='cd ../../../'
+alias .4='cd ../../../../'
+alias .5='cd ../../../../../'
+
+# misc
+alias httpd="ruby -rwebrick -e\"s = WEBrick::HTTPServer.new(Port: 1337, DocumentRoot: Dir.pwd); trap('INT') { s.shutdown }; s.start\""
+alias iso8601='date +%Y-%m-%dT%H:%M:%S'
+alias path='echo $PATH | tr -s ':' \\n'
+alias phonehome='ssh -p 8080 user@bhaak.net'
+alias ttysize="(echo \`tput cols\`x\`tput lines\`)"
+
+alias rename-pane="printf '\033]2;%s\033\\'"

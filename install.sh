@@ -36,6 +36,14 @@ function add_to_crontab()
 	fi
 }
 
+function add_line_to_file()
+{
+	if ! grep -F "$2" "$1" >/dev/null; then
+		echo -e "$okay" "adding $2 to $1"
+		echo >> "$1" "$2"
+	fi
+}
+
 link dunst/dunstrc .config/dunst/dunstrc
 link misc/xmodmap .xmodmap
 link misc/ydl bin/ydl
@@ -46,6 +54,12 @@ link mpv/input.conf .config/mpv/input.conf
 link git/gitconfig .gitconfig
 link git/git-rename-branch   bin/git-rename-branch
 link git/git-checkout-branch bin/git-checkout-branch 
+
+link shells/bash_aliases .bash_aliases
+link shells/bashrc_common .bashrc_common
+mkdir -p "$HOME/.logs"
+add_line_to_file "$HOME/.bashrc" "test -e \"$HOME/.bashrc_common\" && . \"$HOME/.bashrc_common\""
+add_line_to_file "$HOME/.bashrc" "test -e \"$HOME/.bashrc_local\" && . \"$HOME/.bashrc_local\""
 
 mkdir -p "$HOME/.vim/swap_files"
 mkdir -p "$HOME/.vim/undo_files"
