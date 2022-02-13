@@ -23,10 +23,17 @@ set background=dark
 set ignorecase
 set smartcase
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" disable explicit fsync()
+set nofsync
+if !has('nvim')
+  set swapsync=
+end
 
-" expand tabs to spaces
-" set expandtab
+if has('nvim')
+  set inccommand=split
+end
+
+"───────────────────────────────────────────────────────────────────────
 
 " allow backspacing over everything in insert mode
 set backspace=indent,eol,start
@@ -38,6 +45,8 @@ set incsearch " do incremental searching
 
 " fast terminal connection if available
 set ttyfast
+" only draw macros et al. when finished
+set lazyredraw
 
 " For Win32 GUI: remove 't' flag from 'guioptions': no tearoff menu entries
 " let &guioptions = substitute(&guioptions, "t", "", "g")
@@ -130,25 +139,20 @@ if has('OSX')
   set clipboard=unnamed
 endif
 
-" Vundle
-filetype off " required!
+" no shallow clones of plugin's repositories
+let g:plug_shallow=0
 
-set rtp+=~/.vim/bundle/vundle/
-call vundle#rc()
-
-" let Vundle manage Vundle
-" required!
-Plugin 'gmarik/vundle'
+call plug#begin('~/.vim/bundle')
 
 " My bundles here:
 "
 " original repos on GitHub
-Plugin 'bhaak/vim-fugitive'
+Plugin 'bhaak/vim-fugitive', { 'branch': 'master' }
 Plugin 'scrooloose/nerdtree'
 Plugin 'scrooloose/nerdcommenter'
 " Plugin 'dense-analysis/ale'
 Plugin 'vim-syntastic/syntastic'
-Plugin 'mru.vim'
+Plugin 'vim-scripts/mru.vim'
 Plugin 'airblade/vim-rooter'
 Plugin 'editorconfig/editorconfig-vim'
 
@@ -200,18 +204,28 @@ Plugin 'majutsushi/tagbar'
 Plugin 'Yggdroot/indentLine'
 "Plugin 'nathanaelkane/vim-indent-guides'
 
-" this is a massive (in a good way) Vim plugin for editing Ruby on Rails applications.
-Plugin 'tpope/vim-rails'
+
+Plugin 'chiedojohn/vim-case-convert'
+Plugin 'Yggdroot/indentLine'
+"Plugin 'nathanaelkane/vim-indent-guides'
+
+" Colorize hexadecimal colors
+"Plugin 'ap/vim-css-color'
+"Plugin 'chrisbra/Colorizer'
+"Plugin 'powerman/vim-plugin-AnsiEsc'
 
 " lean & mean status/tabline for vim that's light as air.
 "Plugin 'vim-airline/vim-airline'
 
-"Plugin 'powerman/vim-plugin-AnsiEsc'
+" Sublime-like minimap
+"Plugin 'severin-lemaignan/vim-minimap'
 
 " XPath search with :XPathSearchPrompt in XML
 Plugin 'jrjsmrtn/vim-xpath'
 
-" other language support
+" language support
+Plugin 'vim-ruby/vim-ruby'
+Plugin 'kchmck/vim-coffee-script'
 Plugin 'elixir-editors/vim-elixir'
 Plugin 'eslint/eslint'
 
@@ -234,17 +248,20 @@ Plugin 'ggvgc/vim-fuzzysearch'
 " Plugins I haven't yet reviewed
 "───────────────────────────────────────────────────────────────────────
 " Modify * to also work with visual selections.
-" Plug 'nelstrom/vim-visual-star-search'
+" Plugin 'nelstrom/vim-visual-star-search'
 " Distraction free writing by removing UI elements and centering everything.
-" Plug 'junegunn/goyo.vim'
+" Plugin 'junegunn/goyo.vim'
+
+call plug#end()
 
 map YY ZZ
-
-command ShowHighlightGroup :echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 
 "───────────────────────────────────────────────────────────────────────
 " Plugin configuration
 "───────────────────────────────────────────────────────────────────────
+
+" fugitive
+let g:fugitive_legacy_commands=1
 
 " vim-gitgutter
 highlight clear SignColumn " same appearance as your line number column
@@ -327,6 +344,9 @@ command Json :%!python -mjson.tool
 command Xml :%!xmllint --format -
 command Html :%!tidy -w0 -qi
 
+" show syntax highlighting groups at cursor
+command ShowHighlightGroup :echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+
 " truecolor support
 "let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
 "let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
@@ -362,5 +382,13 @@ set tags=.git/tags,./tags,./TAGS,tags,TAGS
 " EditorConfig
 " only mark lines exceeding text_width
 let g:EditorConfig_max_line_indicator = "exceeding"
+
+"augroup XML
+"  autocmd!
+"  autocmd FileType xml let g:xml_syntax_folding=1
+"  autocmd FileType xml setlocal foldmethod=syntax
+"  autocmd FileType xml :syntax on
+"  autocmd FileType xml :%foldopen!
+"augroup END
 
 runtime macros/matchit.vim

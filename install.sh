@@ -64,5 +64,6 @@ add_line_to_file "$HOME/.bashrc" "test -e \"$HOME/.bashrc_local\" && . \"$HOME/.
 mkdir -p "$HOME/.vim/swap_files"
 mkdir -p "$HOME/.vim/undo_files"
 link vim/vimrc .vimrc
+link vim/neovim_init.vim .config/nvim/init.vim
 link vim/create-vim-backup-directory.sh bin/create-vim-backup-directory.sh
 add_to_crontab "*/10 * * * * $HOME/bin/create-vim-backup-directory.sh"
