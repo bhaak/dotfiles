@@ -31,11 +31,10 @@ set smartcase
 " allow backspacing over everything in insert mode
 set backspace=indent,eol,start
 
-set history=50		" keep 50 lines of command line history
-set ruler		" show the cursor position all the time
-set showcmd		" display incomplete commands
-set incsearch		" do incremental searching
-
+set history=50 " keep 50 lines of command line history
+set ruler " show the cursor position all the time
+set showcmd " display incomplete commands
+set incsearch " do incremental searching
 
 " fast terminal connection if available
 set ttyfast
@@ -60,82 +59,77 @@ if &t_Co > 2 || has("gui_running")
   set hlsearch
 endif
 
+filetype plugin on
+filetype indent on
+
 if has("gui_running")
   colorscheme darkblue
-  "set guifont=Fixed\ Regular\ 12
-  set guifont=Terminus\ 14
-  set guifont=DejaVu\ Sans\ Mono\ 12
+  hi Normal guibg=#000030
+  hi Boolean guifg=#ff33ff
+  "hi rubySymbol guifg=#f6ac00
+  hi rubySymbol guifg=#ffbb55
+  hi String guifg=#ffa0a0
+
+  hi String guifg=#ffbb55
+  hi rubySymbol guifg=#ffa0a0
+
+  hi Special ctermfg=1 cterm=bold
+  hi Type ctermfg=46 cterm=bold
+  hi PreProc ctermfg=63
+  hi Statement cterm=bold
+  hi Error ctermfg=0 guifg=#000000
+
+  hi Search guifg=#90fff0 guibg=#0040dd
+
+  hi diffAdded ctermfg=10 guifg=#009900
+  hi diffRemoved ctermfg=9 guifg=#ff2222
+
+  " tab color customization
+  hi TabLineFill guifg=black guibg=red
+  hi TabLine guifg=grey guibg=black
+  hi TabLineSel guifg=lightgrey guibg=#333333
+
+  set guifont=DejaVu\ Sans\ Mono:h18
   if has('OSX')
     set guifont=Menlo\ Regular:h19
   endif
 
   set enc=utf8
-  set spell spelllang=de
-  set spellfile=~/.vim/spellfile.{encoding}.add
+  "set spell spelllang=de
+  "set spellfile=~/.vim/spellfile.{encoding}.add
 
   set t_Co=256
   let &guicursor = &guicursor . ",a:blinkon0" " http://bozziesfw.wordpress.com/2007/01/28/gvim-vimrc-on-windowsxp/
-
-  " Abkuerzungen
-  ab >> »
-  ab << «
-  ab 1> ›
-  ab 1< ‹
-
-  imap ae ä
-  imap oe ö
-  imap ue ü
-  inoremap aee ae
-  inoremap oee oe
-  inoremap uee ue
-  imap AE Ä
-  imap OE Ö
-  imap UE Ü
-  inoremap AEE AE
-  inoremap OEE OE
-  inoremap UEE UE
 endif
 
-" iso8601
-iab <expr> dts strftime("%F %T")
-
 " http://vim.wikia.com/wiki/Maximize_or_set_initial_window_size
-if has("gui_running")
-	set lines=999 columns=999
+if has('gui_running')
+  set lines=999 columns=999
 end
 
 " HTML output
-let html_number_lines = 1
-let html_use_css = 1
-let use_xhtml = 1
+"let html_number_lines = 1
+"let html_use_css = 1
+"let use_xhtml = 1
 
 " Tabulator 8 spaces
 set ts=8
 set list listchars=tab:>-,eol:$,nbsp:~,trail:X
 " Change color of listchars
 if &t_Co == 256 || has("gui_running")
-	hi SpecialKey ctermfg=66 guifg=#649A9A
-	hi Normal guibg=#000030
-	hi Special ctermfg=1 cterm=bold
-	hi Type ctermfg=46 cterm=bold
-	hi PreProc ctermfg=63
-	hi Statement cterm=bold
-	hi Error ctermfg=0 guifg=#000000
+  hi SpecialKey ctermfg=66 guifg=#649a9a
 end
 
+" iso8601
+iab <expr> dts strftime("%F %T")
 
-" Insert current time in ISO8601
-:nnoremap <F5> "=strftime("%F %T")<CR>P
-:inoremap <F5> <C-R>=strftime("%F %T")<CR>
+set syntax=irssilog
 
-"[20:09]<bcode:#unnethack> bhaak: ae -> ä and aee -> ae can be done with
-":imap ae ä   for the
-""        ae -> ä part and :inoremap aee ae   for the aee -> ae part
+if has('OSX')
+  " http://vim.wikia.com/wiki/Mac_OS_X_clipboard_sharing
+  set clipboard=unnamed
+endif
 
-" http://vim.wikia.com/wiki/Mac_OS_X_clipboard_sharing
-"set clipboard=unnamed
-
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Vundle
 filetype off " required!
 
@@ -168,11 +162,27 @@ Plugin 'ctrlpvim/ctrlp.vim'
 Plugin 'airblade/vim-gitgutter'
 "Plugin 'mhinz/vim-signify'
 
+" intellisense / language server protocol
+"let g:coc_force_debug = 1
+"Plugin 'neoclide/coc.nvim', {'do': 'yarn install --frozen-lockfile'}
+"Plugin 'neoclide/coc.nvim', {'branch': 'release'}
+
+" make w,e,b consider CamelCase and snake_case
+Plugin 'chaoren/vim-wordmotion'
+
+" quickly switching between camel case, snake case and hyphenated variables
+Plugin 'chiedojohn/vim-case-convert'
+
 " grep-alikes
 "Plugin 'rking/ag.vim'
 Plugin 'mileszs/ack.vim'
 "Plugin 'jremmen/vim-ripgrep'
 "Plugin 'mhinz/vim-grepper'
+"Plugin 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --no-bash' }
+"Plugin 'junegunn/fzf.vim'
+
+" disables search highlighting when you are done searching and re-enables it when you search again
+Plugin 'romainl/vim-cool'
 
 " mark quickfix/location list items
 Plugin 'cohama/vim-hier'
@@ -184,29 +194,41 @@ Plugin 'ronakg/quickr-preview.vim'
 Plugin 'wsdjeg/vim-fetch'
 
 Plugin 'majutsushi/tagbar'
-"Bundle 'lukaszkorecki/CoffeeTags'
+"Plugin 'lukaszkorecki/CoffeeTags'
 
-Plugin 'vim-ruby/vim-ruby'
-Plugin 'kchmck/vim-coffee-script'
-
-Plugin 'chiedojohn/vim-case-convert'
+" indention levels displayed with thin vertical lines
 Plugin 'Yggdroot/indentLine'
-"Bundle 'nathanaelkane/vim-indent-guides'
-"
-"Bundle 'ap/vim-css-color'
+"Plugin 'nathanaelkane/vim-indent-guides'
 
+" this is a massive (in a good way) Vim plugin for editing Ruby on Rails applications.
+Plugin 'tpope/vim-rails'
 
-Plugin 'chrisbra/Colorizer'
+" lean & mean status/tabline for vim that's light as air.
+"Plugin 'vim-airline/vim-airline'
 
-" themes
+"Plugin 'powerman/vim-plugin-AnsiEsc'
+
+" XPath search with :XPathSearchPrompt in XML
+Plugin 'jrjsmrtn/vim-xpath'
+
+" other language support
+Plugin 'elixir-editors/vim-elixir'
+Plugin 'eslint/eslint'
+
+" color themes
 Plugin 'morhetz/gruvbox'
 Plugin 'crusoexia/vim-monokai'
+Plugin 'chriskempson/base16-vim'
+Plugin 'jaredgorski/spacecamp'
 
-command ShowHighlightGroup :echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
+" the interactive coding scratchpad for hackers
+" Plugin 'metakirby5/codi.vim'
 
-if &t_Co > 16
-	"Plugin 'godlygeek/csapprox'
-end
+" provides granular project configuration using 'projections'
+" Plugin 'tpope/vim-projectionist'
+
+" fuzzy search within buffers
+Plugin 'ggvgc/vim-fuzzysearch'
 
 "───────────────────────────────────────────────────────────────────────
 " Plugins I haven't yet reviewed
@@ -215,6 +237,10 @@ end
 " Plug 'nelstrom/vim-visual-star-search'
 " Distraction free writing by removing UI elements and centering everything.
 " Plug 'junegunn/goyo.vim'
+
+map YY ZZ
+
+command ShowHighlightGroup :echo map(synstack(line('.'), col('.')), 'synIDattr(v:val, "name")')
 
 "───────────────────────────────────────────────────────────────────────
 " Plugin configuration
@@ -226,8 +252,8 @@ highlight clear SignColumn " same appearance as your line number column
 let g:gitgutter_diff_args = '-w -b'
 let g:gitgutter_map_keys = 0 " disable all gitgutter key mappings
 autocmd BufWritePost,WinEnter * GitGutter
-nmap ]c <Plug>GitGutterNextHunk
-nmap [c <Plug>GitGutterPrevHunk
+nmap ]c <Plug>(GitGutterNextHunk)
+nmap [c <Plug>(GitGutterPrevHunk)
 
 highlight GitGutterAdd    guifg=#009900 ctermfg=2
 highlight GitGutterChange guifg=#bbbb00 ctermfg=3
@@ -242,25 +268,28 @@ let g:ctrlp_custom_ignore = {
 " hit at top of window, show up to 100 results
 let g:ctrlp_match_window = 'bottom,order:ttb,results:100'
 if executable('fd')
-	let g:ctrlp_user_command = 'fd --type file --type symlink . %s'
+  let g:ctrlp_user_command = 'fd --type file --type symlink . %s'
 endif
 
 " ASCII-Zeichen fuer Verzeichnisstruktur
-let g:NERDTreeDirArrows = 0
+"let g:NERDTreeDirArrows = 0
 let g:NERDTreeAutoDeleteBuffer=1
 
+" vim-fuzzysearch
+let g:fuzzysearch_match_spaces=1
 
 "───────────────────────────────────────────────────────────────────────
 " filetype configuration
 "───────────────────────────────────────────────────────────────────────
 filetype plugin indent on     " required!
 
+" Round indent to multiple of 'shiftwidth'
 set shiftround
 
-au FileType c    set softtabstop=4 tabstop=4 shiftwidth=4 textwidth=78 cindent
-au FileType ruby set softtabstop=2 tabstop=2 shiftwidth=2 expandtab
-au FileType css  set softtabstop=2 tabstop=2 shiftwidth=2 expandtab
+au FileType c set softtabstop=4 tabstop=4 shiftwidth=4 shiftround textwidth=78 cindent expandtab
+au FileType css set softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 au FileType perl set softtabstop=4 tabstop=4 shiftwidth=4 expandtab
+au FileType ruby set softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
 au BufEnter /tmp/crontab.* setl backupcopy=yes
 
@@ -268,12 +297,15 @@ au BufEnter /tmp/crontab.* setl backupcopy=yes
 au BufNewFile,BufRead *.coffee set filetype=coffee
 au BufNewFile,BufRead *.textile set filetype=textile
 
-" turn off syntax highlighting after N characters
-set synmaxcol=256
+" turn off syntax highlighting after 3*80 characters
+set synmaxcol=240
+
+" https://bugs.archlinux.org/task/36693
+set regexpengine=1
 
 " indentLine
 let g:indentLine_color_gui = '#223377'
-let g:indentLine_color_gui = '#161666'
+"let g:indentLine_color_gui = '#161666'
 let g:indentLine_char = '│'
 if &t_Co == 8
   let g:indentLine_char = '░'
@@ -293,31 +325,32 @@ endif
 " formatting specific file types
 command Json :%!python -mjson.tool
 command Xml :%!xmllint --format -
-command Html :%!tidy -w 0 -qi
+command Html :%!tidy -w0 -qi
 
+" truecolor support
 "let &t_8f = "\<Esc>[38:2:%lu:%lu:%lum"
 "let &t_8b = "\<Esc>[48:2:%lu:%lu:%lum"
 
 " grep-alikes
 if executable('rg')
-	set grepprg=rg\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
-	set grepformat^=%f:%l:%c:%m
+        set grepprg=rg\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
+        set grepformat^=%f:%l:%c:%m
 elseif executable('ss')
-	set grepprg=ss\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
-	set grepformat^=%f:%l:%c:%m
+        set grepprg=ss\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
+        set grepformat^=%f:%l:%c:%m
 elseif executable('ag')
-	set grepprg=ag\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
-	set grepformat^=%f:%l:%c:%m
+        set grepprg=ag\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
+        set grepformat^=%f:%l:%c:%m
 else
-	set grepprg=grep\ --recursive\ --ignore-case\ --fixed-strings
+        set grepprg=grep\ --recursive\ --ignore-case\ --fixed-strings
 endif
 
 cnoreabbrev ss Ack
 " Prefer rg > ag > ack
 if executable('rg')
-	let g:ackprg = 'rg -S --no-heading --sort path --vimgrep'
+  let g:ackprg = 'rg -S --no-heading --sort path --vimgrep'
 elseif executable('ag')
-	let g:ackprg = 'ag --vimgrep'
+  let g:ackprg = 'ag --vimgrep'
 endif
 
 let g:quickr_preview_on_cursor = 1
@@ -326,18 +359,8 @@ let g:quickr_preview_on_cursor = 1
 " tags
 set tags=.git/tags,./tags,./TAGS,tags,TAGS
 
-" editorconfig
+" EditorConfig
 " only mark lines exceeding text_width
 let g:EditorConfig_max_line_indicator = "exceeding"
-"let g:EditorConfig_max_line_indicator = "none"
 
 runtime macros/matchit.vim
-
-
-"augroup XML
-"	autocmd!
-"	autocmd FileType xml let g:xml_syntax_folding=1
-"	autocmd FileType xml setlocal foldmethod=syntax
-"	autocmd FileType xml :syntax on
-"	autocmd FileType xml :%foldopen!
-"augroup END
