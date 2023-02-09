@@ -1,27 +1,21 @@
-" An example for a vimrc file.
-"
-" Maintainer:	Bram Moolenaar <Bram@vim.org>
-" Last change:	2001 Jul 18
-"
-" To use it, copy it to
-"     for Unix and OS/2:  ~/.vimrc
-"	      for Amiga:  s:.vimrc
-"  for MS-DOS and Win32:  $VIM\_vimrc
-"	    for OpenVMS:  sys$login:.vimrc
-
 " Use Vim settings, rather then Vi settings (much better!).
 " This must be first, because it changes other options as a side effect.
 set nocompatible
+set nofsync
+set secure
 
 " backups into this directory
-set backupdir=~/.vimbackup/backup
-set backup		" keep a backup file
+set backupdir=$HOME/.vimbackup/backup
+set backup " keep a backup file
+set backupcopy=yes
+" save backups formatted like filename~vimrc~2000-12-31T12:23:34.bak
+au BufWritePre * let &bex = '~' . strftime("%FT%T") . '.bak'
 
 " location of swap files with complete paths
-set directory=$HOME/.vim/swap_files//
-set undodir=$HOME/.vim/undo_files//
+set directory=$HOME/.vim/swap_files/
+set undodir=$HOME/.vim/undo_files/
 
-" better syntax highlighting for dark backgrounds
+" dark background
 set background=dark
 
 " Usually search case insensitive, if uppercase characters
@@ -71,6 +65,9 @@ if has("gui_running")
   "set guifont=Fixed\ Regular\ 12
   set guifont=Terminus\ 14
   set guifont=DejaVu\ Sans\ Mono\ 12
+  if has('OSX')
+    set guifont=Menlo\ Regular:h19
+  endif
 
   set enc=utf8
   set spell spelllang=de
@@ -115,7 +112,7 @@ let use_xhtml = 1
 " Tabulator 8 spaces
 set ts=8
 set list listchars=tab:>-,eol:$,nbsp:~,trail:X
-" Farbe der listchars aendern$
+" Change color of listchars
 if &t_Co == 256 || has("gui_running")
 	hi SpecialKey ctermfg=66 guifg=#649A9A
 	hi Normal guibg=#000030
@@ -140,7 +137,7 @@ end
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " Vundle
-filetype off                  " required!
+filetype off " required!
 
 set rtp+=~/.vim/bundle/vundle/
 call vundle#rc()
@@ -155,6 +152,7 @@ Plugin 'gmarik/vundle'
 Plugin 'bhaak/vim-fugitive'
 Plugin 'scrooloose/nerdtree'
 Plugin 'scrooloose/nerdcommenter'
+" Plugin 'dense-analysis/ale'
 Plugin 'vim-syntastic/syntastic'
 Plugin 'mru.vim'
 Plugin 'airblade/vim-rooter'
