@@ -31,3 +31,7 @@
 	newHighlight = white 22
 [credential]
 	helper = cache --timeout=86400
+[diff "rspec"]
+	xfuncname = "^[ \t]*((RSpec|describe|context|it|before|after|around|feature|scenario)[ \t].*)$"
+[diff "cucumber"]
+	xfuncname = "^[ \t]*((Feature|Background|Scenario|Scenario Outline|Examples): .*)$"
