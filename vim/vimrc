@@ -15,7 +15,7 @@ au BufWritePre * let &bex = '~' . strftime("%FT%T") . '.bak'
 set directory=$HOME/.vim/swap_files/
 set undodir=$HOME/.vim/undo_files/
 
-" dark background
+" better syntax highlighting for dark backgrounds
 set background=dark
 
 " Usually search case insensitive, if uppercase characters
@@ -27,10 +27,6 @@ set smartcase
 set nofsync
 if !has('nvim')
   set swapsync=
-end
-
-if has('nvim')
-  set inccommand=split
 end
 
 "───────────────────────────────────────────────────────────────────────
@@ -61,9 +57,11 @@ vnoremap p <Esc>:let current_reg = @"<CR>gvs<C-R>=current_reg<CR><Esc>
 " text is lost and it only works for putting the current register.
 "vnoremap p "_dp
 
+let s:is_gui = (exists('g:neovide') || has('gui_vimr') || has('gui_running'))
+
 " Switch syntax highlighting on, when the terminal has colors
 " Also switch on highlighting the last used search pattern.
-if &t_Co > 2 || has("gui_running")
+if &t_Co > 2 || s:is_gui
   syntax on
   set hlsearch
 endif
@@ -71,7 +69,7 @@ endif
 filetype plugin on
 filetype indent on
 
-if has("gui_running")
+if s:is_gui
   colorscheme darkblue
   hi Normal guibg=#000030
   hi Boolean guifg=#ff33ff
@@ -112,8 +110,13 @@ if has("gui_running")
 endif
 
 " http://vim.wikia.com/wiki/Maximize_or_set_initial_window_size
-if has('gui_running')
+if has('gui_macvim')
   set lines=999 columns=999
+end
+
+if has('gui_vimr')
+  " hide the cmdline unless it is used
+  set cmdheight=0
 end
 
 " HTML output
@@ -125,7 +128,7 @@ end
 set ts=8
 set list listchars=tab:>-,eol:$,nbsp:~,trail:X
 " Change color of listchars
-if &t_Co == 256 || has("gui_running")
+if &t_Co == 256 || s:is_gui
   hi SpecialKey ctermfg=66 guifg=#649a9a
 end
 
@@ -138,6 +141,13 @@ if has('OSX')
   " http://vim.wikia.com/wiki/Mac_OS_X_clipboard_sharing
   set clipboard=unnamed
 endif
+
+if has('nvim')
+  " show preview of s command
+  set inccommand=split
+end
+
+"───────────────────────────────────────────────────────────────────────
 
 " no shallow clones of plugin's repositories
 let g:plug_shallow=0
@@ -185,7 +195,7 @@ Plugin 'mileszs/ack.vim'
 "Plugin 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --no-bash' }
 "Plugin 'junegunn/fzf.vim'
 
-" disables search highlighting when you are done searching and re-enables it when you search again
+" disable search highlighting when you are done searching and re-enables it when you search again
 Plugin 'romainl/vim-cool'
 
 " mark quickfix/location list items
@@ -201,11 +211,6 @@ Plugin 'majutsushi/tagbar'
 "Plugin 'lukaszkorecki/CoffeeTags'
 
 " indention levels displayed with thin vertical lines
-Plugin 'Yggdroot/indentLine'
-"Plugin 'nathanaelkane/vim-indent-guides'
-
-
-Plugin 'chiedojohn/vim-case-convert'
 Plugin 'Yggdroot/indentLine'
 "Plugin 'nathanaelkane/vim-indent-guides'
 
@@ -298,7 +303,7 @@ let g:fuzzysearch_match_spaces=1
 "───────────────────────────────────────────────────────────────────────
 " filetype configuration
 "───────────────────────────────────────────────────────────────────────
-filetype plugin indent on     " required!
+filetype plugin indent on " required!
 
 " Round indent to multiple of 'shiftwidth'
 set shiftround
@@ -307,6 +312,7 @@ au FileType c set softtabstop=4 tabstop=4 shiftwidth=4 shiftround textwidth=78 c
 au FileType css set softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 au FileType perl set softtabstop=4 tabstop=4 shiftwidth=4 expandtab
 au FileType ruby set softtabstop=2 tabstop=2 shiftwidth=2 expandtab
+au FileType vim set softtabstop=2 tabstop=2 shiftwidth=2 expandtab
 
 au BufEnter /tmp/crontab.* setl backupcopy=yes
 
@@ -353,16 +359,16 @@ command ShowHighlightGroup :echo map(synstack(line('.'), col('.')), 'synIDattr(v
 
 " grep-alikes
 if executable('rg')
-        set grepprg=rg\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
-        set grepformat^=%f:%l:%c:%m
+  set grepprg=rg\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
+  set grepformat^=%f:%l:%c:%m
 elseif executable('ss')
-        set grepprg=ss\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
-        set grepformat^=%f:%l:%c:%m
+  set grepprg=ss\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
+  set grepformat^=%f:%l:%c:%m
 elseif executable('ag')
-        set grepprg=ag\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
-        set grepformat^=%f:%l:%c:%m
+  set grepprg=ag\ --vimgrep\ --ignore-case\ --column\ --fixed-strings
+  set grepformat^=%f:%l:%c:%m
 else
-        set grepprg=grep\ --recursive\ --ignore-case\ --fixed-strings
+  set grepprg=grep\ --recursive\ --ignore-case\ --fixed-strings
 endif
 
 cnoreabbrev ss Ack

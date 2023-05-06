@@ -31,7 +31,7 @@ function link()
 function add_to_crontab()
 {
 	if ! crontab -l | grep -F "$1" >/dev/null; then
-		echo -e "$okay" "adding $1 to crontab"
+		echo -e "$okay" "adding $1 to crontab" "$reset"
 		(crontab -l 2>/dev/null; echo "$1") | crontab -
 	fi
 }
@@ -39,7 +39,7 @@ function add_to_crontab()
 function add_line_to_file()
 {
 	if ! grep -F "$2" "$1" >/dev/null; then
-		echo -e "$okay" "adding $2 to $1"
+		echo -e "$okay" "adding $2 to $1" "$reset"
 		echo >> "$1" "$2"
 	fi
 }
@@ -64,7 +64,9 @@ add_line_to_file "$HOME/.bashrc" "test -e \"$HOME/.bashrc_local\" && . \"$HOME/.
 
 mkdir -p "$HOME/.vim/swap_files"
 mkdir -p "$HOME/.vim/undo_files"
+mkdir -p "$HOME/.vim/autoload/"
 link vim/vimrc .vimrc
 link vim/neovim_init.vim .config/nvim/init.vim
+link vim/vim-plug.vim .vim/autoload/plug.vim
 link vim/create-vim-backup-directory.sh bin/create-vim-backup-directory.sh
 add_to_crontab "*/10 * * * * $HOME/bin/create-vim-backup-directory.sh"
