@@ -62,6 +62,9 @@ mkdir -p "$HOME/.logs"
 add_line_to_file "$HOME/.bashrc" "test -e \"$HOME/.bashrc_common\" && . \"$HOME/.bashrc_common\""
 add_line_to_file "$HOME/.bashrc" "test -e \"$HOME/.bashrc_local\" && . \"$HOME/.bashrc_local\""
 
+mkdir -p "$HOME/.rubies/"
+link ruby/install-stable.sh .rubies/install-stable.sh
+
 mkdir -p "$HOME/.vim/swap_files"
 mkdir -p "$HOME/.vim/undo_files"
 mkdir -p "$HOME/.vim/autoload/"
