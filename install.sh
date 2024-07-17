@@ -54,7 +54,8 @@ link mpv/input.conf .config/mpv/input.conf
 link git/gitconfig .gitconfig
 link git/gitattributes .gitattributes
 link git/git-rename-branch   bin/git-rename-branch
-link git/git-checkout-branch bin/git-checkout-branch 
+link git/git-checkout-branch bin/git-checkout-branch
+link git/git-overview-branches bin/git-overview-branches
 
 link shells/bash_aliases .bash_aliases
 link shells/bashrc_common .bashrc_common

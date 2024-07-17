@@ -32,6 +32,15 @@ OptionParser.new do |parser|
 
 end.parse!
 
+include_terms = []
+exclude_terms = []
+ARGV.map { |term|
+  negative = term[0] == '-'
+  term = term[1..-1] if negative
+  include_terms << term unless negative
+  exclude_terms << term if negative
+}
+
 SORT_BY='authordate'
 
 # see https://git-scm.com/docs/git-for-each-ref#_field_names
@@ -56,8 +65,10 @@ branch_length = branches.map {|b| b.split("\t")[1].length}.max
 max_column_length = $width || `tput cols`.to_i if true
 color_number = 0
 previous_hash = ''
-branches.each {|branch|
+branches.each { |branch|
   f = branch.split("\t")
+  next if !include_terms.empty? && !include_terms.any? { |term| (f[2] + f[7]).downcase.include?(term) }
+  next if !exclude_terms.empty? && exclude_terms.any? { |term| (f[2] + f[7]).downcase.include?(term) }
 
   # prevent too dark commit hash colors
   r = f[0][0..1].to_i(16)*200/255 + 50
