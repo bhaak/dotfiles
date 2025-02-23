@@ -65,6 +65,7 @@ add_line_to_file "$HOME/.bashrc" "test -e \"$HOME/.bashrc_local\" && . \"$HOME/.
 
 mkdir -p "$HOME/.rubies/"
 link ruby/install-stable.sh .rubies/install-stable.sh
+link ruby/install-jruby.sh .rubies/install-jruby.sh
 
 mkdir -p "$HOME/.vim/swap_files"
 mkdir -p "$HOME/.vim/undo_files"
