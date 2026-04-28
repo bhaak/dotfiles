@@ -19,4 +19,4 @@ base=`basename $filename .tar.gz`
 cd $base
 echo $pwd
 
-./configure --prefix=$HOME/.rubies/$base && make -j10 && make install
+./configure --prefix=$HOME/.rubies/$base && make -j`nproc` && make install
