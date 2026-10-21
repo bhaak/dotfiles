@@ -1,0 +1,159 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+# Compact, one-lined, colorful log listing
+
+require 'optparse'
+require 'open3'
+
+begin
+  require_relative "#{ENV['HOME']}/.dotfiles/dependencies/term-rgbcolor/lib/term/rgbcolor"
+rescue LoadError
+  module Term
+    RGBColor = Struct.new(:r, :g, :b) { def to_s; ''; end }
+  end
+end
+
+$color = $stdout.tty?
+$width = nil
+date_mode = false
+git_options = []
+
+# Support git's shorthand `-<n>` for the commit limit.
+ARGV.map! { |argument|
+  argument =~ /\A-(\d+)\z/ ? "--max-count=#{Regexp.last_match(1)}" : argument
+}
+
+OptionParser.new do |parser|
+  parser.banner = 'Usage: git-log-overview [options] [<revision-range> ...]'
+  parser.separator ''
+  parser.separator 'Compact git log output,'
+  parser.separator ''
+  parser.separator 'Options:'
+
+  parser.on('-d', '--date', 'Show author date and email (like `git lod`)') {
+    date_mode = true
+  }
+  parser.on('-a', '--all', 'Show commits from all refs') {
+    git_options << '--all'
+  }
+  parser.on('-n', '--max-count=INTEGER', 'Limit the number of commits') { |n|
+    git_options << "--max-count=#{Integer(n)}"
+  }
+  parser.on('--author=PATTERN', 'Limit to commits by the given author') { |p|
+    git_options << "--author=#{p}"
+  }
+  parser.on('--grep=PATTERN', 'Limit to commits whose message matches') { |p|
+    git_options << "--grep=#{p}"
+  }
+  parser.on('--since=DATE', 'Show commits more recent than DATE') { |d|
+    git_options << "--since=#{d}"
+  }
+  parser.on('--reverse', 'Output commits in reverse order') {
+    git_options << '--reverse'
+  }
+  parser.on('-c', '--color', 'Force colored output') {
+    $color = true
+  }
+  parser.on('-C', '--no-color', 'Disable colored output') {
+    $color = false
+  }
+  parser.on('-w', '--width=INTEGER', 'Set output width') { |width|
+    $width = Integer(width)
+  }
+  parser.on('-h', '--help', 'Show this help') {
+    puts parser
+    exit
+  }
+end.parse!
+
+reset = $color ? "\e[0m" : ''
+local_branch_color  = Term::RGBColor.new(175, 175, 0, fallback: :yellow)
+remote_branch_color = Term::RGBColor.new(175, 135, 0, fallback: :red)
+tag_color           = Term::RGBColor.new(175, 95, 175, fallback: :magenta)
+author_color        = Term::RGBColor.new(215, 175, 0, fallback: :yellow)
+
+unless $color
+  local_branch_color = remote_branch_color = tag_color = author_color = ''
+end
+
+remotes = `git remote 2>/dev/null`.split("\n")
+max_column_length = $width || (STDOUT.tty? ? `tput cols`.to_i : 0)
+# Do not truncate piped output unless a width was requested explicitly.
+truncate = max_column_length > 0
+max_column_length = 80 unless truncate
+
+# Fields are separated by \x1f; subject and refs cannot contain that byte.
+format = [
+  '%h',  # 0 abbreviated hash
+  '%s',  # 1 subject
+  '%ai', # 2 author date
+  '%at', # 3 author date (unix)
+  '%ae', # 4 author email
+  '%D',  # 5 refs
+].join('%x1f')
+
+command = ['git', 'log', "--format=#{format}", *git_options, *ARGV]
+require 'pry'; binding.pry
+output, error, status = Open3.capture3(*command)
+unless status.success?
+  warn error.empty? ? "git log failed (#{status.exitstatus})" : error
+  exit status.exitstatus || 1
+end
+
+def color_for_hash(hash)
+  # prevent too dark commit hash colors
+  r = (hash[0..1].to_i(16) * 200 / 255) + 50
+  g = (hash[2..3].to_i(16) * 200 / 255) + 50
+  b = (hash[4..5].to_i(16) * 200 / 255) + 50
+  Term::RGBColor.new(r, g, b)
+end
+
+def ref_color(ref, remotes, local_color, remote_color, tag_color)
+  return tag_color if ref.start_with?('tag: ')
+
+  name = ref.sub(/\AHEAD -> /, '')
+  remote = remotes.any? { |remote_name| name == remote_name || name.start_with?("#{remote_name}/") }
+  remote ? remote_color : local_color
+end
+
+def age_color_for(timestamp)
+  age = Time.now.to_i - timestamp.to_i
+  days = age / 86_400
+  staleness = [255 - (Math.log(1 + days).ceil * 12), 75].max
+  Term::RGBColor.new(staleness, staleness, staleness)
+end
+
+output.split("\n").each { |line|
+  hash, subject, author_date, author_date_raw, author_email, refs = line.split("\x1f", 6)
+  next if hash.nil?
+
+  hash_color = $color ? color_for_hash(hash) : ''
+  date_color = $color ? age_color_for(author_date_raw) : ''
+
+  refs = refs.to_s.split(', ').reject(&:empty?)
+  decorated_refs = refs.map { |ref|
+    color = $color ? ref_color(ref, remotes, local_branch_color, remote_branch_color, tag_color) : ''
+    "#{color}#{ref}#{reset}"
+  }
+
+  if date_mode
+    prefix = [
+      "#{hash_color}#{hash}#{reset}",
+      "#{date_color}#{author_date}#{reset}",
+      "#{author_color}<#{author_email}>#{reset}",
+    ].join(' ')
+  else
+    decoration = decorated_refs.empty? ? '' : " (#{decorated_refs.join(', ')})"
+    prefix = "#{hash_color}#{hash}#{reset}#{decoration}"
+  end
+
+  # Truncate the subject so the visible line fits the terminal width.
+  if truncate
+    visible_prefix = prefix.gsub(/\e\[[0-9;]*m/, '').length + 1
+    subject_length = max_column_length - visible_prefix
+    subject = subject_length > 0 ? subject.to_s[0, subject_length].to_s : ''
+  end
+
+  puts "#{prefix} #{subject}".rstrip
+}
