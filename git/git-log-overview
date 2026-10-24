@@ -86,7 +86,7 @@ unless $color
 end
 
 terminal_width = ENV['COLUMNS']&.to_i || IO.console&.winsize&.last || 80
-max_column_length = $width || (STDOUT.tty? ? `tput cols`.to_i : 0)
+max_column_length = $width || (STDOUT.tty? ? terminal_width : 0)
 remotes = `git remote 2>/dev/null`.split("\n")
 # Do not truncate piped output unless a width was requested explicitly.
 truncate = max_column_length > 0
@@ -102,7 +102,7 @@ format = [
   '%D',  # 5 refs
 ].join('%x1f')
 
-command = ['git', 'log', "--format=#{format}", *git_options, *ARGV]
+command = ['git', 'log', "--format=#{format}", *git_options, '--', *ARGV]
 output, error, status = Open3.capture3(*command)
 unless status.success?
   warn error.empty? ? "git log failed (#{status.exitstatus})" : error
