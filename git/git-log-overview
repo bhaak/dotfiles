@@ -22,6 +22,7 @@ $color = $stdout.tty?
 $width = nil
 date_mode = true
 author_mode = false
+no_pager = false
 git_options = []
 
 # Support git's shorthand `-<n>` for the commit limit.
@@ -30,7 +31,7 @@ ARGV.map! { |argument|
 }
 
 OptionParser.new do |parser|
-  parser.banner = 'Usage: git-log-overview [options] [<revision-range> ...]'
+  parser.banner = 'Usage: git-log-overview [options] [<revision-range> ...] [-- <path> ...]'
   parser.separator ''
   parser.separator 'Compact git log output,'
   parser.separator ''
@@ -69,6 +70,9 @@ OptionParser.new do |parser|
   parser.on('-w', '--width=INTEGER', 'Set output width') { |width|
     $width = Integer(width)
   }
+  parser.on('--no-pager', 'Do not pipe output into a pager') {
+    no_pager = true
+  }
   parser.on('-h', '--help', 'Show this help') {
     puts parser
     exit
@@ -102,12 +106,9 @@ format = [
   '%D',  # 5 refs
 ].join('%x1f')
 
-command = ['git', 'log', "--format=#{format}", *git_options, '--', *ARGV]
-output, error, status = Open3.capture3(*command)
-unless status.success?
-  warn error.empty? ? "git log failed (#{status.exitstatus})" : error
-  exit status.exitstatus || 1
-end
+# `--end-of-options` keeps revisions working while preventing ARGV from being
+# parsed as git options; paths still need to be separated with `--`.
+command = ['git', 'log', "--format=#{format}", *git_options, '--end-of-options', *ARGV]
 
 def color_for_hash(hash)
   # prevent too dark commit hash colors
@@ -132,34 +133,70 @@ def age_color_for(timestamp)
   Term::RGBColor.new(staleness, staleness, staleness)
 end
 
-output.split("\n").each { |line|
-  hash, subject, author_date, author_date_raw, author_email, refs = line.split("\x1f", 6)
-  next if hash.nil?
+pager = nil
+if !no_pager && $stdout.tty?
+  pager, = Open3.capture2('git', 'var', 'GIT_PAGER')
+  pager = pager.strip
+  pager = nil if pager.empty? || pager == 'cat'
+end
+pager_io = begin
+  pager && IO.popen(pager, 'w')
+rescue Errno::ENOENT
+  warn "pager not found: #{pager}"
+  nil
+end
+out = pager_io || $stdout
+out.sync = true if pager_io
 
-  hash_color = $color ? color_for_hash(hash) : ''
-  date_color = $color ? age_color_for(author_date_raw) : ''
+stdin, git_out, git_err, wait_thr = Open3.popen3(*command)
+stdin.close
+error_thread = Thread.new { git_err.read }
 
-  refs = refs.to_s.split(', ').reject(&:empty?)
-  decorated_refs = refs.map { |ref|
-    color = $color ? ref_color(ref, remotes, local_branch_color, remote_branch_color, tag_color) : ''
-    "#{color}#{ref}#{reset}"
+# Ignore SIGPIPE so a closed pager surfaces as EPIPE instead of killing us.
+Signal.trap('PIPE', 'IGNORE')
+begin
+  git_out.each_line(chomp: true) { |line|
+    hash, subject, author_date, author_date_raw, author_email, refs = line.split("\x1f", 6)
+    next if hash.nil?
+
+    hash_color = $color ? color_for_hash(hash) : ''
+    date_color = $color ? age_color_for(author_date_raw) : ''
+
+    refs = refs.to_s.split(', ').reject(&:empty?)
+    decorated_refs = refs.map { |ref|
+      color = $color ? ref_color(ref, remotes, local_branch_color, remote_branch_color, tag_color) : ''
+      "#{color}#{ref}#{reset}"
+    }
+
+    prefix = []
+    prefix << "#{hash_color}#{hash}#{reset}"
+    prefix << "#{date_color}#{author_date}#{reset}" if date_mode
+    prefix << "#{author_color}<#{author_email}>#{reset}" if author_mode
+    if !decorated_refs.empty?
+      prefix << "(#{decorated_refs.join(', ')})"
+    end
+    prefix = prefix.join(' ')
+
+    # Truncate the subject so the visible line fits the terminal width.
+    if truncate
+      visible_prefix = prefix.gsub(/\e\[[0-9;]*m/, '').length + 1
+      subject_length = max_column_length - visible_prefix
+      subject = subject_length > 0 ? subject.to_s[0, subject_length].to_s : ''
+    end
+
+    out.puts "#{prefix} #{subject}".rstrip
   }
+rescue Errno::EPIPE
+  exit 0
+ensure
+  git_out.close unless git_out.closed?
+  pager_io&.close rescue nil
+end
 
-  prefix = []
-  prefix << "#{hash_color}#{hash}#{reset}"
-  prefix << "#{date_color}#{author_date}#{reset}" if date_mode
-  prefix << "#{author_color}<#{author_email}>#{reset}" if author_mode
-  if !decorated_refs.empty?
-    prefix << "(#{decorated_refs.join(', ')})"
-  end
-  prefix = prefix.join(' ')
+status = wait_thr.value
+error = error_thread.value
 
-  # Truncate the subject so the visible line fits the terminal width.
-  if truncate
-    visible_prefix = prefix.gsub(/\e\[[0-9;]*m/, '').length + 1
-    subject_length = max_column_length - visible_prefix
-    subject = subject_length > 0 ? subject.to_s[0, subject_length].to_s : ''
-  end
-
-  puts "#{prefix} #{subject}".rstrip
-}
+unless status.success?
+  warn error.empty? ? "git log failed (#{status.exitstatus})" : error
+  exit status.exitstatus || 1
+end
