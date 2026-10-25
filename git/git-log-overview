@@ -21,8 +21,13 @@ end
 $color = $stdout.tty?
 $width = nil
 date_mode = true
+committer_date_mode = false
 author_mode = false
+committer_author_mode = false
 no_pager = false
+all_mode = false
+reverse = false
+graph = nil
 git_options = []
 
 # Support git's shorthand `-<n>` for the commit limit.
@@ -39,18 +44,35 @@ OptionParser.new do |parser|
 
   parser.on('-d', '--date', 'Show author date') {
     date_mode = true
+    committer_date_mode = false
   }
   parser.on('-D', '--no-date', "Don't show author date") {
     date_mode = false
   }
+  parser.on('--committer-date', 'Show committer date instead of author date') {
+    date_mode = true
+    committer_date_mode = true
+  }
   parser.on('--author', 'Show author') {
     author_mode = true
+    committer_author_mode = false
+  }
+  parser.on('--committer-author', 'Show committer email instead of author email') {
+    author_mode = true
+    committer_author_mode = true
   }
   parser.on('--grep=PATTERN', 'Limit to commits whose message matches') { |p|
     git_options << "--grep=#{p}"
   }
-  parser.on('-a', '--all', 'Show commits from all refs') {
+  parser.on('-a', '--all', 'Show commits from all refs (implies --graph)') {
+    all_mode = true
     git_options << '--all'
+  }
+  parser.on('-g', '--graph', 'Draw a graph of the commit history') {
+    graph = true
+  }
+  parser.on('--no-graph', 'Do not draw a graph') {
+    graph = false
   }
   parser.on('-n', '--max-count=INTEGER', 'Limit the number of commits') { |n|
     git_options << "--max-count=#{Integer(n)}"
@@ -59,6 +81,7 @@ OptionParser.new do |parser|
     git_options << "--since=#{d}"
   }
   parser.on('--reverse', 'Output commits in reverse order') {
+    reverse = true
     git_options << '--reverse'
   }
   parser.on('-c', '--color', 'Force colored output') {
@@ -78,6 +101,10 @@ OptionParser.new do |parser|
     exit
   }
 end.parse!
+
+graph = all_mode && !reverse if graph.nil?
+abort '--graph and --reverse cannot be combined' if graph && reverse
+git_options << '--graph' if graph
 
 reset = $color ? "\e[0m" : ''
 local_branch_color  = Term::ANSIColor.new(:bright_green)
@@ -104,7 +131,11 @@ format = [
   '%at', # 3 author date (unix)
   '%ae', # 4 author email
   '%D',  # 5 refs
+  '%ci', # 6 committer date
+  '%ct', # 7 committer date (unix)
+  '%ce', # 8 committer email
 ].join('%x1f')
+format = "%x1f#{format}" if graph
 
 # `--end-of-options` keeps revisions working while preventing ARGV from being
 # parsed as git options; paths still need to be separated with `--`.
@@ -156,11 +187,24 @@ error_thread = Thread.new { git_err.read }
 Signal.trap('PIPE', 'IGNORE')
 begin
   git_out.each_line(chomp: true) { |line|
-    hash, subject, author_date, author_date_raw, author_email, refs = line.split("\x1f", 6)
+    # --graph emits connector-only lines without a format payload.
+    if graph && !line.include?("\x1f")
+      out.puts line.rstrip
+      next
+    end
+
+    fields = line.split("\x1f", graph ? 10 : 9)
+    graph_prefix = graph ? fields.shift : ''
+    hash, subject, author_date, author_date_raw, author_email, refs,
+      committer_date, committer_date_raw, committer_email = fields
     next if hash.nil?
 
+    date = committer_date_mode ? committer_date : author_date
+    date_raw = committer_date_mode ? committer_date_raw : author_date_raw
+    email = committer_author_mode ? committer_email : author_email
+
     hash_color = $color ? color_for_hash(hash) : ''
-    date_color = $color ? age_color_for(author_date_raw) : ''
+    date_color = $color ? age_color_for(date_raw) : ''
 
     refs = refs.to_s.split(', ').reject(&:empty?)
     decorated_refs = refs.map { |ref|
@@ -170,12 +214,13 @@ begin
 
     prefix = []
     prefix << "#{hash_color}#{hash}#{reset}"
-    prefix << "#{date_color}#{author_date}#{reset}" if date_mode
-    prefix << "#{author_color}<#{author_email}>#{reset}" if author_mode
+    prefix << "#{date_color}#{date}#{reset}" if date_mode
+    prefix << "#{author_color}<#{email}>#{reset}" if author_mode
     if !decorated_refs.empty?
       prefix << "(#{decorated_refs.join(', ')})"
     end
     prefix = prefix.join(' ')
+    prefix = "#{graph_prefix}#{prefix}" unless graph_prefix.empty?
 
     # Truncate the subject so the visible line fits the terminal width.
     if truncate
