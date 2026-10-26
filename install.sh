@@ -56,6 +56,7 @@ link git/gitattributes .gitattributes
 link git/git-rename-branch   bin/git-rename-branch
 link git/git-checkout-branch bin/git-checkout-branch
 link git/git-overview-branches bin/git-overview-branches
+link git/git-log-overview bin/git-log-overview
 
 link shells/bash_aliases .bash_aliases
 link shells/bashrc_common .bashrc_common
