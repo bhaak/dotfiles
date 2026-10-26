@@ -111,6 +111,7 @@ local_branch_color  = Term::ANSIColor.new(:bright_green)
 remote_branch_color = Term::ANSIColor.new(:bright_red)
 tag_color           = Term::ANSIColor.new(:bright_yellow)
 author_color        = Term::ANSIColor.new(:yellow)
+graph_color         = Term::ANSIColor.new(:bright_yellow)
 
 unless $color
   local_branch_color = remote_branch_color = tag_color = author_color = ''
@@ -134,6 +135,7 @@ format = [
   '%ci', # 6 committer date
   '%ct', # 7 committer date (unix)
   '%ce', # 8 committer email
+  '%p',  # 9 parents (space-separated)
 ].join('%x1f')
 format = "%x1f#{format}" if graph
 
@@ -193,10 +195,10 @@ begin
       next
     end
 
-    fields = line.split("\x1f", graph ? 10 : 9)
-    graph_prefix = graph ? fields.shift : ''
+    fields = line.split("\x1f", graph ? 11 : 10)
+    graph_prefix = graph ? fields.shift.strip : ''
     hash, subject, author_date, author_date_raw, author_email, refs,
-      committer_date, committer_date_raw, committer_email = fields
+      committer_date, committer_date_raw, committer_email, parents = fields
     next if hash.nil?
 
     date = committer_date_mode ? committer_date : author_date
@@ -220,7 +222,10 @@ begin
       prefix << "(#{decorated_refs.join(', ')})"
     end
     prefix = prefix.join(' ')
-    prefix = "#{graph_prefix}#{prefix}" unless graph_prefix.empty?
+
+    # More than one parent identifies a merge commit.
+    merge = parents.to_s.include?(' ')
+    prefix = "#{merge ? graph_color : ''}#{graph_prefix.strip}#{merge ? reset : ''} #{prefix}" unless graph_prefix.empty?
 
     # Truncate the subject so the visible line fits the terminal width.
     if truncate
